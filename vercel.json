@@ -1,7 +1,7 @@
 {
   "version": 2,
   "name": "predix-ecommerce-intelligence",
-  "public": true,
+
   "outputDirectory": "dashboard",
   "headers": [
     {
