@@ -1,0 +1,22 @@
+# Predix — Dashboard data generation & local ML
+# Install with: pip install -r requirements.txt
+
+# Core data
+pandas>=2.1.0
+numpy>=1.26.0
+pyarrow>=14.0.0
+
+# Machine learning
+scikit-learn>=1.4.0
+
+# MLflow tracking
+mlflow>=2.10.0
+
+# API serving
+fastapi>=0.110.0
+uvicorn[standard]>=0.27.0
+pydantic>=2.0.0
+
+# Utilities
+python-dotenv>=1.0.0
+requests>=2.31.0

@@ -1,0 +1,38 @@
+name: 'predix'
+version: '1.0.0'
+config-version: 2
+
+profile: 'predix'
+
+model-paths:      ["models"]
+analysis-paths:   ["analyses"]
+test-paths:       ["tests"]
+seed-paths:       ["seeds"]
+macro-paths:      ["macros"]
+snapshot-paths:   ["snapshots"]
+
+target-path:  "target"
+clean-targets: ["target", "dbt_packages"]
+
+models:
+  predix:
+    bronze:
+      +materialized: table
+      +schema: bronze
+      +tags: ["bronze", "raw"]
+    silver:
+      +materialized: incremental
+      +schema: silver
+      +tags: ["silver", "cleaned"]
+      +incremental_strategy: merge
+      +unique_key: event_id
+    gold:
+      +materialized: table
+      +schema: gold
+      +tags: ["gold", "features"]
+
+vars:
+  run_date:          "{{ modules.datetime.date.today() }}"
+  ref_date:          "2019-12-01"
+  churn_window_days: 30
+  min_purchase_price: 0.01

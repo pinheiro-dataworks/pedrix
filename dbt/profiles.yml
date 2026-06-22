@@ -1,0 +1,20 @@
+predix:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "{{ env_var('PREDIX_DEV_DB', './predix_dev.duckdb') }}"
+      threads: 4
+
+    prod:
+      type: snowflake
+      account:   "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user:      "{{ env_var('SNOWFLAKE_USER') }}"
+      password:  "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+      role:      PREDIX_ROLE
+      database:  PREDIX
+      warehouse: PREDIX_WH
+      schema:    bronze
+      threads:   8
+      client_session_keep_alive: true
+      query_tag: predix_dbt

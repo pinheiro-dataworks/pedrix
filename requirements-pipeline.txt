@@ -1,0 +1,31 @@
+# Predix — Production pipeline dependencies
+# Install on the Spark / Airflow cluster environment
+
+# PySpark (production cluster usually provides this)
+pyspark>=3.5.0
+delta-spark>=3.0.0
+
+# Airflow
+apache-airflow>=2.8.0
+apache-airflow-providers-apache-spark>=4.5.0
+apache-airflow-providers-snowflake>=5.0.0
+
+# dbt
+dbt-core>=1.8.0
+dbt-snowflake>=1.8.0
+dbt-duckdb>=1.8.0
+
+# Snowflake connector
+snowflake-connector-python>=3.7.0
+snowflake-sqlalchemy>=1.5.0
+
+# Same ML stack as requirements.txt
+pandas>=2.1.0
+numpy>=1.26.0
+scikit-learn>=1.4.0
+mlflow>=2.10.0
+xgboost>=2.0.0
+lightgbm>=4.3.0
+
+# Feature store
+hopsworks>=3.7.0

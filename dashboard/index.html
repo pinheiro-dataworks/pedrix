@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Predix — Ecommerce Intelligence Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <style>
+    /* ─── Reset & Variables ─────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:         #0D0D0F;
+      --bg-card:    #1A1A1D;
+      --bg-card2:   #1E1E22;
+      --bg-input:   #131316;
+      --acc1:       #7B5CFA;
+      --acc2:       #A78BFA;
+      --green:      #34D399;
+      --amber:      #F59E0B;
+      --red:        #EF4444;
+      --blue:       #60A5FA;
+      --orange:     #F97316;
+      --txt:        #FFFFFF;
+      --txt2:       #9A9AA5;
+      --txt3:       #5A5A65;
+      --border:     rgba(255,255,255,0.06);
+      --border2:    rgba(255,255,255,0.10);
+      --glow:       rgba(123,92,250,0.35);
+      --sidebar-w:  220px;
+      --topbar-h:   64px;
+      --radius:     14px;
+      --radius-sm:  8px;
+    }
+
+    /* ─── Base ──────────────────────────────────────────────────────────────── */
+    html, body { height: 100%; }
+    body {
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--txt);
+      overflow-x: hidden;
+    }
+    ::selection { background: rgba(123,92,250,0.3); }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: #2a2a30; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3a3a44; }
+
+    /* ─── Topbar ────────────────────────────────────────────────────────────── */
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      height: var(--topbar-h);
+      background: rgba(13,13,15,0.92);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center;
+      padding: 0 24px 0 20px; gap: 20px;
+    }
+    .topbar-logo {
+      display: flex; align-items: center; gap: 0;
+      flex-shrink: 0;
+    }
+    .topbar-logo img { height: 36px; width: auto; display: block; }
+    .topbar-search {
+      flex: 1; max-width: 380px; margin: 0 auto;
+      position: relative;
+    }
+    .topbar-search input {
+      width: 100%; background: var(--bg-input);
+      border: 1px solid var(--border2); border-radius: 24px;
+      color: var(--txt); font-size: 13px; padding: 9px 16px 9px 38px;
+      outline: none; font-family: inherit; transition: border-color .2s;
+    }
+    .topbar-search input:focus { border-color: var(--acc1); }
+    .topbar-search input::placeholder { color: var(--txt3); }
+    .topbar-search-icon {
+      position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+      color: var(--txt3); pointer-events: none;
+    }
+    .topbar-right { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+    .topbar-icon-btn {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: transparent; border: 1px solid var(--border);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      color: var(--txt2); transition: all .2s;
+    }
+    .topbar-icon-btn:hover { background: var(--bg-card); border-color: var(--border2); color: var(--txt); }
+    .topbar-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--acc1), var(--acc2));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 600; cursor: pointer; flex-shrink: 0;
+    }
+    .topbar-kpi-strip {
+      display: flex; align-items: center; gap: 2px;
+      border-left: 1px solid var(--border); padding-left: 16px;
+    }
+    .topbar-kpi {
+      display: flex; flex-direction: column; align-items: flex-start;
+      padding: 0 12px;
+      border-right: 1px solid var(--border);
+    }
+    .topbar-kpi:last-child { border-right: none; }
+    .topbar-kpi-label { font-size: 10px; color: var(--txt3); letter-spacing: .06em; text-transform: uppercase; font-weight: 500; }
+    .topbar-kpi-value { font-size: 15px; font-weight: 700; color: var(--txt); line-height: 1.2; }
+    .topbar-kpi-value.accent { color: var(--acc2); }
+
+    /* ─── Layout ────────────────────────────────────────────────────────────── */
+    .layout { display: flex; height: 100vh; padding-top: var(--topbar-h); }
+
+    /* ─── Sidebar ───────────────────────────────────────────────────────────── */
+    .sidebar {
+      width: var(--sidebar-w); flex-shrink: 0;
+      background: var(--bg-card);
+      border-right: 1px solid var(--border);
+      position: fixed; top: var(--topbar-h); bottom: 0; left: 0;
+      display: flex; flex-direction: column;
+      padding: 20px 12px; gap: 4px; overflow-y: auto; z-index: 50;
+    }
+    .sidebar-section { font-size: 10px; color: var(--txt3); letter-spacing: .1em; text-transform: uppercase; font-weight: 600; padding: 12px 10px 6px; }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; border-radius: var(--radius-sm);
+      cursor: pointer; color: var(--txt2); font-size: 13.5px; font-weight: 500;
+      transition: all .18s; border: 1px solid transparent; user-select: none;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.05); color: var(--txt); }
+    .nav-item.active {
+      background: linear-gradient(135deg, rgba(123,92,250,.22), rgba(167,139,250,.12));
+      color: var(--acc2); border-color: rgba(123,92,250,0.3);
+    }
+    .nav-item svg { flex-shrink: 0; }
+    .nav-item .badge {
+      margin-left: auto; background: var(--acc1); color: #fff;
+      font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 10px;
+    }
+
+    /* ─── Filters ───────────────────────────────────────────────────────────── */
+    .sidebar-filters { margin-top: auto; border-top: 1px solid var(--border); padding-top: 16px; }
+    .filter-group { margin-bottom: 14px; }
+    .filter-label { font-size: 10px; color: var(--txt3); letter-spacing: .08em; text-transform: uppercase; font-weight: 600; margin-bottom: 6px; display: block; }
+    .filter-btns { display: flex; gap: 4px; flex-wrap: wrap; }
+    .filter-btn {
+      font-size: 11px; font-weight: 500; padding: 5px 10px; border-radius: 20px;
+      border: 1px solid var(--border2); background: transparent;
+      color: var(--txt2); cursor: pointer; transition: all .15s; font-family: inherit;
+    }
+    .filter-btn:hover { border-color: var(--acc1); color: var(--acc1); }
+    .filter-btn.active { background: var(--acc1); border-color: var(--acc1); color: #fff; }
+    .filter-select {
+      width: 100%; background: var(--bg-input); border: 1px solid var(--border2);
+      border-radius: var(--radius-sm); color: var(--txt); font-size: 12px;
+      padding: 7px 10px; outline: none; font-family: inherit; cursor: pointer;
+    }
+    .filter-select option { background: #1a1a1d; }
+    .filter-reset {
+      width: 100%; padding: 8px; border-radius: var(--radius-sm);
+      background: transparent; border: 1px solid var(--border2);
+      color: var(--txt2); font-size: 12px; font-weight: 500;
+      cursor: pointer; font-family: inherit; transition: all .15s;
+    }
+    .filter-reset:hover { border-color: var(--red); color: var(--red); }
+
+    /* ─── Main content ──────────────────────────────────────────────────────── */
+    .main {
+      margin-left: var(--sidebar-w); flex: 1; min-height: 0;
+      overflow-y: auto; padding: 24px;
+    }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ─── Grid system ───────────────────────────────────────────────────────── */
+    .grid { display: grid; gap: 16px; margin-bottom: 16px; }
+    .grid-4 { grid-template-columns: repeat(4, 1fr); }
+    .grid-3 { grid-template-columns: repeat(3, 1fr); }
+    .grid-2 { grid-template-columns: repeat(2, 1fr); }
+    .grid-1 { grid-template-columns: 1fr; }
+    .col-span-2 { grid-column: span 2; }
+    .col-span-3 { grid-column: span 3; }
+    .col-span-4 { grid-column: span 4; }
+
+    /* ─── Cards ─────────────────────────────────────────────────────────────── */
+    .card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px; position: relative; overflow: hidden;
+    }
+    .card-title {
+      font-size: 12px; font-weight: 600; color: var(--txt2);
+      letter-spacing: .08em; text-transform: uppercase; margin-bottom: 16px;
+    }
+
+    /* ─── KPI Cards ─────────────────────────────────────────────────────────── */
+    .kpi-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px;
+      display: flex; flex-direction: column; gap: 8px;
+      position: relative; overflow: hidden; transition: border-color .2s;
+    }
+    .kpi-card:hover { border-color: rgba(123,92,250,0.3); }
+    .kpi-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--acc1), var(--acc2));
+      opacity: 0; transition: opacity .2s;
+    }
+    .kpi-card:hover::before { opacity: 1; }
+    .kpi-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; margin-bottom: 4px;
+    }
+    .kpi-icon.purple { background: rgba(123,92,250,0.15); }
+    .kpi-icon.green  { background: rgba(52,211,153,0.15); }
+    .kpi-icon.amber  { background: rgba(245,158,11,0.15); }
+    .kpi-icon.blue   { background: rgba(96,165,250,0.15); }
+    .kpi-icon.red    { background: rgba(239,68,68,0.15); }
+    .kpi-value { font-size: 28px; font-weight: 800; color: var(--txt); line-height: 1; }
+    .kpi-label { font-size: 12px; color: var(--txt2); font-weight: 500; }
+    .kpi-delta { font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 4px; }
+    .kpi-delta.pos { color: var(--green); }
+    .kpi-delta.neg { color: var(--red); }
+
+    /* ─── Chart containers ──────────────────────────────────────────────────── */
+    .chart-wrap { width: 100%; height: 320px; }
+    .chart-wrap-lg { width: 100%; height: 400px; }
+    .chart-wrap-xl { width: 100%; height: 480px; }
+    .chart-wrap-sm { width: 100%; height: 260px; }
+    .chart-wrap-3d { width: 100%; height: 520px; }
+
+    /* ─── Table ─────────────────────────────────────────────────────────────── */
+    .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .data-table th {
+      text-align: left; padding: 10px 14px; color: var(--txt3);
+      font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+    }
+    .data-table td {
+      padding: 12px 14px; color: var(--txt2); border-bottom: 1px solid rgba(255,255,255,0.03);
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: rgba(255,255,255,0.02); color: var(--txt); }
+    .data-table .num { color: var(--txt); font-weight: 600; font-variant-numeric: tabular-nums; }
+    .data-table .cat { color: var(--acc2); }
+
+    /* ─── Badges ────────────────────────────────────────────────────────────── */
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .badge-green  { background: rgba(52,211,153,.15);  color: var(--green); }
+    .badge-amber  { background: rgba(245,158,11,.15);  color: var(--amber); }
+    .badge-red    { background: rgba(239,68,68,.15);   color: var(--red); }
+    .badge-purple { background: rgba(123,92,250,.15);  color: var(--acc2); }
+    .badge-blue   { background: rgba(96,165,250,.15);  color: var(--blue); }
+    .badge-gray   { background: rgba(107,114,128,.15); color: #9CA3AF; }
+
+    /* ─── Architecture tab ──────────────────────────────────────────────────── */
+    .pipeline-flow {
+      display: flex; align-items: center; gap: 0; flex-wrap: nowrap;
+      overflow-x: auto; padding: 24px; background: var(--bg);
+      border-radius: var(--radius); border: 1px solid var(--border);
+    }
+    .pipeline-node {
+      display: flex; flex-direction: column; align-items: center;
+      background: var(--bg-card2); border: 1px solid var(--border2);
+      border-radius: 12px; padding: 14px 16px; min-width: 110px;
+      text-align: center; flex-shrink: 0; position: relative;
+    }
+    .pipeline-node .node-icon { font-size: 22px; margin-bottom: 6px; }
+    .pipeline-node .node-label { font-size: 11px; font-weight: 600; color: var(--txt); }
+    .pipeline-node .node-sub { font-size: 10px; color: var(--txt3); margin-top: 2px; }
+    .pipeline-arrow {
+      flex-shrink: 0; color: var(--acc1); font-size: 18px; padding: 0 6px;
+    }
+    .pipeline-node.blue   { border-color: rgba(96,165,250,.4);  }
+    .pipeline-node.amber  { border-color: rgba(245,158,11,.4); }
+    .pipeline-node.green  { border-color: rgba(52,211,153,.4); }
+    .pipeline-node.purple { border-color: rgba(123,92,250,.4); }
+
+    .stack-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+      padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
+      border: 1px solid; letter-spacing: .03em;
+    }
+    .chip-purple { background: rgba(123,92,250,.12); color: var(--acc2); border-color: rgba(123,92,250,.3); }
+    .chip-blue   { background: rgba(96,165,250,.12); color: var(--blue); border-color: rgba(96,165,250,.3); }
+    .chip-green  { background: rgba(52,211,153,.12); color: var(--green); border-color: rgba(52,211,153,.3); }
+    .chip-amber  { background: rgba(245,158,11,.12); color: var(--amber); border-color: rgba(245,158,11,.3); }
+    .chip-red    { background: rgba(239,68,68,.12);  color: var(--red);   border-color: rgba(239,68,68,.3); }
+
+    .model-card {
+      background: var(--bg); border: 1px solid var(--border2);
+      border-radius: var(--radius); padding: 20px;
+    }
+    .model-card dl { display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; margin-top: 12px; }
+    .model-card dt { font-size: 11px; color: var(--txt3); font-weight: 600; text-transform: uppercase; letter-spacing:.06em; padding-top: 1px; }
+    .model-card dd { font-size: 13px; color: var(--txt2); }
+    .model-card .auc-val { font-size: 24px; font-weight: 800; color: var(--green); }
+
+    /* ─── Section titles ────────────────────────────────────────────────────── */
+    .section-title {
+      font-size: 11px; font-weight: 700; color: var(--txt2);
+      letter-spacing: .1em; text-transform: uppercase;
+      margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+    }
+    .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* ─── Loading / Error ───────────────────────────────────────────────────── */
+    #loading-overlay {
+      position: fixed; inset: 0; background: var(--bg); z-index: 999;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+    }
+    .spinner {
+      width: 40px; height: 40px; border-radius: 50%;
+      border: 3px solid rgba(123,92,250,0.2);
+      border-top-color: var(--acc1); animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { color: var(--txt2); font-size: 14px; }
+  </style>
+</head>
+<body>
+
+<!-- Loading overlay -->
+<div id="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-text">Loading Predix Intelligence…</div>
+</div>
+
+<!-- ─── Topbar ──────────────────────────────────────────────────────────────── -->
+<header class="topbar">
+  <div class="topbar-logo">
+    <img src="./assets/Logo_02.png" alt="Predix" />
+  </div>
+
+  <div class="topbar-search">
+    <svg class="topbar-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <input type="text" placeholder="Search metrics, segments, products…" />
+  </div>
+
+  <div class="topbar-kpi-strip">
+    <div class="topbar-kpi">
+      <span class="topbar-kpi-label">Revenue</span>
+      <span class="topbar-kpi-value accent" id="kpi-revenue">—</span>
+    </div>
+    <div class="topbar-kpi">
+      <span class="topbar-kpi-label">Orders</span>
+      <span class="topbar-kpi-value" id="kpi-orders">—</span>
+    </div>
+    <div class="topbar-kpi">
+      <span class="topbar-kpi-label">Customers</span>
+      <span class="topbar-kpi-value" id="kpi-customers">—</span>
+    </div>
+    <div class="topbar-kpi">
+      <span class="topbar-kpi-label">Churn Rate</span>
+      <span class="topbar-kpi-value" id="kpi-churn" style="color:var(--red)">—</span>
+    </div>
+  </div>
+
+  <div class="topbar-right">
+    <button class="topbar-icon-btn" title="Notifications">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+      </svg>
+    </button>
+    <button class="topbar-icon-btn" title="Settings">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </button>
+    <div class="topbar-avatar" title="Data Scientist">DS</div>
+  </div>
+</header>
+
+<!-- ─── Layout ──────────────────────────────────────────────────────────────── -->
+<div class="layout">
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-section">Analytics</div>
+
+    <div class="nav-item active" data-tab="overview" onclick="showTab('overview')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+        <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+      </svg>
+      Overview
+    </div>
+
+    <div class="nav-item" data-tab="churn" onclick="showTab('churn')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+      </svg>
+      Churn Intelligence
+      <span class="badge">ML</span>
+    </div>
+
+    <div class="nav-item" data-tab="products" onclick="showTab('products')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <path d="M16 10a4 4 0 0 1-8 0"/>
+      </svg>
+      Products &amp; Categories
+    </div>
+
+    <div class="nav-item" data-tab="behavior" onclick="showTab('behavior')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+      User Behavior
+    </div>
+
+    <div class="nav-item" data-tab="ml" onclick="showTab('ml')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="2"/>
+        <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+      </svg>
+      ML Intelligence
+      <span class="badge">3</span>
+    </div>
+
+    <div class="sidebar-section" style="margin-top:8px">System</div>
+
+    <div class="nav-item" data-tab="architecture" onclick="showTab('architecture')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+        <polyline points="2 17 12 22 22 17"/>
+        <polyline points="2 12 12 17 22 12"/>
+      </svg>
+      Architecture
+    </div>
+
+    <!-- Filters -->
+    <div class="sidebar-filters">
+      <div class="filter-group">
+        <span class="filter-label">Month</span>
+        <div class="filter-btns">
+          <button class="filter-btn active" data-month="all" onclick="setMonth('all')">All</button>
+          <button class="filter-btn" data-month="october" onclick="setMonth('october')">Oct</button>
+          <button class="filter-btn" data-month="november" onclick="setMonth('november')">Nov</button>
+        </div>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">Category</span>
+        <select class="filter-select" id="category-select" onchange="setCategory(this.value)">
+          <option value="all">All Categories</option>
+        </select>
+      </div>
+      <button class="filter-reset" onclick="resetFilters()">↺ Reset Filters</button>
+    </div>
+  </nav>
+
+  <!-- Main content -->
+  <main class="main">
+
+    <!-- ═══ OVERVIEW ═══════════════════════════════════════════════════════════ -->
+    <div id="tab-overview" class="tab-panel active">
+      <div class="grid grid-4">
+        <div class="kpi-card">
+          <div class="kpi-icon purple">💰</div>
+          <div class="kpi-value" id="ov-revenue">—</div>
+          <div class="kpi-label">Total Revenue</div>
+          <div class="kpi-delta pos" id="ov-revenue-d">↑ Oct–Nov 2019</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon green">🛒</div>
+          <div class="kpi-value" id="ov-orders">—</div>
+          <div class="kpi-label">Total Orders</div>
+          <div class="kpi-delta pos" id="ov-orders-d">Purchase events</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon blue">👥</div>
+          <div class="kpi-value" id="ov-customers">—</div>
+          <div class="kpi-label">Unique Customers</div>
+          <div class="kpi-delta pos" id="ov-customers-d">Active users</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon amber">📈</div>
+          <div class="kpi-value" id="ov-aov">—</div>
+          <div class="kpi-label">Avg Order Value</div>
+          <div class="kpi-delta pos" id="ov-conv">— conversion</div>
+        </div>
+      </div>
+
+      <div class="grid grid-1">
+        <div class="card">
+          <div class="card-title">Daily Event Volume</div>
+          <div id="chart-daily-events" class="chart-wrap-lg"></div>
+        </div>
+      </div>
+
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="card-title">Conversion Funnel</div>
+          <div id="chart-funnel" class="chart-wrap"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Event Split</div>
+          <div id="chart-event-split" class="chart-wrap"></div>
+        </div>
+      </div>
+
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="card-title">Top Categories by Revenue</div>
+          <div id="chart-cat-revenue" class="chart-wrap"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Daily Revenue Trend</div>
+          <div id="chart-daily-revenue" class="chart-wrap"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ CHURN INTELLIGENCE ════════════════════════════════════════════════ -->
+    <div id="tab-churn" class="tab-panel">
+      <div class="grid grid-4">
+        <div class="kpi-card">
+          <div class="kpi-icon red">⚡</div>
+          <div class="kpi-value" id="ch-rate" style="color:var(--red)">—</div>
+          <div class="kpi-label">Churn Rate</div>
+          <div class="kpi-delta neg">Oct buyers lost in Nov</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon amber">🛍️</div>
+          <div class="kpi-value" id="ch-oct">—</div>
+          <div class="kpi-label">Oct Buyers</div>
+          <div class="kpi-delta pos">Cohort baseline</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon green">✅</div>
+          <div class="kpi-value" id="ch-retained">—</div>
+          <div class="kpi-label">Retained</div>
+          <div class="kpi-delta pos">Bought in both months</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon blue">🆕</div>
+          <div class="kpi-value" id="ch-new">—</div>
+          <div class="kpi-label">New Nov Buyers</div>
+          <div class="kpi-delta pos">First-time purchasers</div>
+        </div>
+      </div>
+
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="card-title">Churn Rate Gauge</div>
+          <div id="chart-churn-gauge" class="chart-wrap"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Customer Cohort — Oct vs Nov</div>
+          <div id="chart-cohort" class="chart-wrap"></div>
+        </div>
+      </div>
+
+      <div class="grid grid-2">
+        <div class="card col-span-2">
+          <div class="card-title">RFM Customer Map — Recency × Monetary × Frequency</div>
+          <div id="chart-rfm-map" class="chart-wrap-lg"></div>
+        </div>
+      </div>
+
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="card-title">Customer Segments</div>
+          <div id="chart-segments" class="chart-wrap"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">3D RFM Space (Rotatable)</div>
+          <div id="chart-rfm-3d" class="chart-wrap-3d"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ PRODUCTS & CATEGORIES ════════════════════════════════════════════ -->
+    <div id="tab-products" class="tab-panel">
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="card-title">Category Revenue Treemap</div>
+          <div id="chart-treemap" class="chart-wrap-lg"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Top Brands by Revenue</div>
+          <div id="chart-brands" class="chart-wrap-lg"></div>
+        </div>
+      </div>
+
+      <div class="grid grid-1">
+        <div class="card">
+          <div class="card-title">View / Cart / Purchase by Category</div>
+          <div id="chart-cat-funnel" class="chart-wrap-lg"></div>
+        </div>
+      </div>
+
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="card-title">Avg Purchase Price by Category</div>
+          <div id="chart-avg-price" class="chart-wrap"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Category Conversion Rate</div>
+          <div id="chart-conv-rate" class="chart-wrap"></div>
+        </div>
+      </div>
+
+      <div class="grid grid-1">
+        <div class="card">
+          <div class="card-title">Top 20 Products by Revenue</div>
+          <div style="overflow-x:auto">
+            <table class="data-table" id="products-table">
+              <thead>
+                <tr>
+                  <th>#</th><th>Product ID</th><th>Category</th>
+                  <th>Brand</th><th>Revenue</th><th>Orders</th><th>Avg Price</th>
+                </tr>
+              </thead>
+              <tbody id="products-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ USER BEHAVIOR ═════════════════════════════════════════════════════ -->
+    <div id="tab-behavior" class="tab-panel">
+      <div class="grid grid-1">
+        <div class="card">
+          <div class="card-title">Purchase Heatmap — Hour × Weekday</div>
+          <div id="chart-heatmap" class="chart-wrap-xl"></div>
+        </div>
+      </div>
+
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="card-title">Purchases by Hour</div>
+          <div id="chart-hourly" class="chart-wrap"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Purchases by Weekday</div>
+          <div id="chart-weekday" class="chart-wrap"></div>
+        </div>
+      </div>
+
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="card-title">Session Depth Distribution</div>
+          <div id="chart-session-depth" class="chart-wrap"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Cumulative Revenue by Hour</div>
+          <div id="chart-cumulative" class="chart-wrap"></div>
+        </div>
+      </div>
+
+      <div class="grid grid-1">
+        <div class="card">
+          <div class="card-title">Views vs Purchases Ratio Over Time (%)</div>
+          <div id="chart-ratio" class="chart-wrap-lg"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ ML INTELLIGENCE ════════════════════════════════════════════════════ -->
+    <div id="tab-ml" class="tab-panel">
+      <div class="grid grid-3">
+        <div class="kpi-card">
+          <div class="kpi-icon green">🎯</div>
+          <div class="kpi-value" id="ml-gb-auc" style="color:var(--green)">—</div>
+          <div class="kpi-label">Gradient Boosting AUC</div>
+          <div class="kpi-delta pos">Best performing model</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon blue">🌲</div>
+          <div class="kpi-value" id="ml-rf-auc" style="color:var(--blue)">—</div>
+          <div class="kpi-label">Random Forest AUC</div>
+          <div class="kpi-delta pos">Ensemble model</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon purple">📊</div>
+          <div class="kpi-value" id="ml-lr-auc" style="color:var(--acc2)">—</div>
+          <div class="kpi-label">Logistic Regression AUC</div>
+          <div class="kpi-delta pos">Baseline model</div>
+        </div>
+      </div>
+
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="card-title">ROC Curves — 3 Models</div>
+          <div id="chart-roc" class="chart-wrap-lg"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Feature Importance (Random Forest)</div>
+          <div id="chart-feature-imp" class="chart-wrap-lg"></div>
+        </div>
+      </div>
+
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="card-title">Churn Score Distribution (Gradient Boosting)</div>
+          <div id="chart-churn-scores" class="chart-wrap"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Category Affinity Matrix</div>
+          <div id="chart-affinity" class="chart-wrap"></div>
+        </div>
+      </div>
+
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="card-title">Upsell / Cross-sell Opportunity Score</div>
+          <div id="chart-upsell" class="chart-wrap"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Segment Action Matrix</div>
+          <div style="overflow-x:auto">
+            <table class="data-table">
+              <thead>
+                <tr><th>Segment</th><th>Customers</th><th>Churn Risk</th><th>Upsell Priority</th></tr>
+              </thead>
+              <tbody id="segment-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ ARCHITECTURE ══════════════════════════════════════════════════════ -->
+    <div id="tab-architecture" class="tab-panel">
+      <div class="grid grid-1" style="margin-bottom:20px">
+        <div class="card">
+          <div class="card-title">Data Pipeline Architecture</div>
+          <div class="pipeline-flow">
+            <div class="pipeline-node blue">
+              <div class="node-icon">📥</div>
+              <div class="node-label">Raw Events</div>
+              <div class="node-sub">CSV / Kafka</div>
+            </div>
+            <div class="pipeline-arrow">→</div>
+            <div class="pipeline-node blue">
+              <div class="node-icon">⚡</div>
+              <div class="node-label">PySpark</div>
+              <div class="node-sub">Ingestion & Cleaning</div>
+            </div>
+            <div class="pipeline-arrow">→</div>
+            <div class="pipeline-node amber">
+              <div class="node-icon">🟫</div>
+              <div class="node-label">Bronze Layer</div>
+              <div class="node-sub">Raw Parquet</div>
+            </div>
+            <div class="pipeline-arrow">→</div>
+            <div class="pipeline-node amber">
+              <div class="node-icon">⬜</div>
+              <div class="node-label">Silver Layer</div>
+              <div class="node-sub">dbt Transforms</div>
+            </div>
+            <div class="pipeline-arrow">→</div>
+            <div class="pipeline-node green">
+              <div class="node-icon">🏆</div>
+              <div class="node-label">Gold / Features</div>
+              <div class="node-sub">Snowflake + dbt</div>
+            </div>
+            <div class="pipeline-arrow">→</div>
+            <div class="pipeline-node purple">
+              <div class="node-icon">🤖</div>
+              <div class="node-label">ML Training</div>
+              <div class="node-sub">XGBoost + MLflow</div>
+            </div>
+            <div class="pipeline-arrow">→</div>
+            <div class="pipeline-node purple">
+              <div class="node-icon">📦</div>
+              <div class="node-label">MLflow Registry</div>
+              <div class="node-sub">Model Versioning</div>
+            </div>
+            <div class="pipeline-arrow">→</div>
+            <div class="pipeline-node green">
+              <div class="node-icon">🚀</div>
+              <div class="node-label">FastAPI</div>
+              <div class="node-sub">Scoring API</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-1" style="margin-bottom:20px">
+        <div class="card">
+          <div class="card-title" style="margin-bottom:16px">Tech Stack</div>
+          <div class="section-title">Ingestion &amp; Orchestration</div>
+          <div class="stack-chips" style="margin-bottom:16px">
+            <span class="chip chip-blue">Apache Spark 3.5</span>
+            <span class="chip chip-blue">PySpark</span>
+            <span class="chip chip-amber">Apache Airflow 2.8</span>
+            <span class="chip chip-amber">Apache Kafka</span>
+          </div>
+          <div class="section-title">Transformation &amp; Storage</div>
+          <div class="stack-chips" style="margin-bottom:16px">
+            <span class="chip chip-blue">Snowflake</span>
+            <span class="chip chip-green">dbt Core 1.8</span>
+            <span class="chip chip-amber">Delta Lake</span>
+            <span class="chip chip-purple">Parquet</span>
+          </div>
+          <div class="section-title">ML &amp; Serving</div>
+          <div class="stack-chips">
+            <span class="chip chip-purple">XGBoost</span>
+            <span class="chip chip-purple">scikit-learn</span>
+            <span class="chip chip-green">MLflow</span>
+            <span class="chip chip-red">FastAPI</span>
+            <span class="chip chip-blue">Plotly.js</span>
+            <span class="chip chip-amber">Vercel</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-2" style="margin-bottom:20px">
+        <div class="card model-card">
+          <div class="card-title">Model Card — Churn Prediction</div>
+          <div class="auc-val" id="arch-gb-auc">—</div>
+          <dl>
+            <dt>Algorithm</dt><dd>Gradient Boosting Classifier</dd>
+            <dt>Task</dt><dd>Binary Classification (churn / retain)</dd>
+            <dt>Training data</dt><dd>October 2019 buyer cohort</dd>
+            <dt>Features</dt><dd>frequency, monetary, recency, unique_cats, unique_brands, cart_to_pur_ratio + 4 more</dd>
+            <dt>Imbalance</dt><dd>class_weight="balanced" + stratified split</dd>
+            <dt>Tracking</dt><dd>MLflow — experiment: predix_churn_v1</dd>
+            <dt>Limitations</dt><dd>2-month window; non-subscription e-commerce; 95% base churn expected</dd>
+          </dl>
+        </div>
+        <div class="card model-card">
+          <div class="card-title">Model Card — Upsell Scoring</div>
+          <div class="auc-val" style="color:var(--amber)">Score</div>
+          <dl>
+            <dt>Algorithm</dt><dd>Rule-based gap scoring + RFM segmentation</dd>
+            <dt>Task</dt><dd>Regression / Ranking (opportunity score per category)</dd>
+            <dt>Formula</dt><dd>score = views − purchases × 8 (clipped ≥ 0)</dd>
+            <dt>Input</dt><dd>Category-level view/purchase counts + affinity matrix</dd>
+            <dt>Output</dt><dd>Ranked list of categories with highest unconverted demand</dd>
+            <dt>Tracking</dt><dd>MLflow — experiment: predix_upsell_v1</dd>
+            <dt>Use case</dt><dd>CRM campaigns, personalised push notifications, retargeting</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="grid grid-3">
+        <div class="card">
+          <div class="card-title">Feature Store Schema</div>
+          <p style="font-size:12px;color:var(--txt2);margin-bottom:10px">Entities &amp; feature groups registered in MLflow Feature Store</p>
+          <div style="font-size:12px;color:var(--txt2);line-height:1.9">
+            <div style="color:var(--acc2);font-weight:600;margin-bottom:4px">entity: user</div>
+            <div>· frequency, monetary, recency</div>
+            <div>· unique_categories, unique_brands</div>
+            <div>· cart_to_purchase_ratio</div>
+            <div>· rfm_score, segment</div>
+            <div style="color:var(--acc2);font-weight:600;margin:10px 0 4px">entity: product</div>
+            <div>· total_views, total_carts, total_purchases</div>
+            <div>· avg_price, revenue</div>
+            <div>· conversion_rate</div>
+            <div style="color:var(--acc2);font-weight:600;margin:10px 0 4px">entity: session</div>
+            <div>· depth, duration_minutes</div>
+            <div>· events_per_session</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Airflow DAGs</div>
+          <div style="font-size:12px;color:var(--txt2);line-height:1.9">
+            <div style="color:var(--green);font-weight:600;margin-bottom:4px">dag_01_ingestion</div>
+            <div>Schedule: @daily | Tasks: extract_csv → spark_clean → write_bronze</div>
+            <div style="color:var(--green);font-weight:600;margin:10px 0 4px">dag_02_feature_engineering</div>
+            <div>Schedule: @daily | Tasks: read_bronze → build_features → write_gold</div>
+            <div style="color:var(--green);font-weight:600;margin:10px 0 4px">dag_03_model_training</div>
+            <div>Schedule: @weekly | Tasks: load_features → train → mlflow_log → register</div>
+            <div style="color:var(--green);font-weight:600;margin:10px 0 4px">dag_04_batch_scoring</div>
+            <div>Schedule: @daily | Tasks: load_model → score_users → write_scores → api_reload</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">dbt Layer Architecture</div>
+          <div style="font-size:12px;color:var(--txt2);line-height:1.9">
+            <div style="color:var(--amber);font-weight:600;margin-bottom:4px">🟫 Bronze (raw)</div>
+            <div>· raw_events — direct source mapping</div>
+            <div>· No transformations; schema enforcement only</div>
+            <div style="color:var(--txt);font-weight:600;margin:10px 0 4px">⬜ Silver (cleaned)</div>
+            <div>· events_cleaned — type casts, null handling</div>
+            <div>· sessions — session aggregation</div>
+            <div>· user_daily_agg — daily user metrics</div>
+            <div style="color:var(--amber);font-weight:600;margin:10px 0 4px">🏆 Gold (features)</div>
+            <div>· customer_rfm — RFM scores &amp; segments</div>
+            <div>· churn_features — ML-ready feature table</div>
+            <div>· upsell_features — opportunity scores</div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /architecture -->
+
+  </main>
+</div><!-- /layout -->
+
+<script src="./js/app.js"></script>
+</body>
+</html>
