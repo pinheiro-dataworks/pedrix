@@ -1,0 +1,13 @@
+# Python dependencies — not needed for static dashboard deployment
+requirements.txt
+requirements-pipeline.txt
+
+# Pipeline and backend — not deployed to Vercel
+pipeline/
+airflow/
+dbt/
+api/
+scripts/
+dataset/
+mlruns/
+mlartifacts/
