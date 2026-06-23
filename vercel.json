@@ -1,8 +1,10 @@
 {
   "version": 2,
   "name": "predix-ecommerce-intelligence",
-
   "outputDirectory": "dashboard",
+  "installCommand": "",
+  "buildCommand": "",
+  "framework": null,
   "headers": [
     {
       "source": "/data/(.*)",
